@@ -139,3 +139,86 @@ finish mod4;
 run mod4(a, b);
 print a b c;
 
+* Modules with Optional and Default Arguments ;
+proc iml;
+start myAdd(x, y=);
+	if ncol(y) = 0 then return (x);
+	return (x + y);
+finish;
+
+z = myadd(5);
+w = myadd(5, 3);
+print z, w;
+
+* isskepped () ;
+start mydot(x, y=);
+	if isskipped(y) then return (x`*x);
+	return (x`*y);
+finish;
+z = mydot({1,2,3});
+w = mydot({1,2,3}, {-1,0,1});
+print z w;
+
+*isskipped () and # 
+start axpy(a=1, x, y=); /* compute ax + y */
+   if isskipped(y) then return(a#x);
+   else                 return(a#x + y);
+finish;
+
+p = {1 2 3};
+q = {1 1 1};
+z1 = axpy( , p);    /* a and y skipped; a has default value */
+z2 = axpy(2, p);    /* y skipped */
+z3 = axpy(2, p, q); /* no arguments are skipped */
+print z1, z2, z3;
+ 
+* Optional Arguments with Data-Dependent Default Values ;
+start stdize(x, loc=mean(x), scale=std(x));
+   return ( (x-loc)/scale );
+finish;
+
+x = {1, 1, 0, -1, -1};
+z = stdize(x);             /* use default values */
+
+center = 1;  s  = 2;
+z1 = stdize(x,  center);    /* skip 3rd argument */
+z2 = stdize(x,        , s); /* skip 2nd argument */
+z3 = stdize(x,  center, s); /* no arguments are skipped */
+print z z1 z2 z3;
+
+* Nesting Module Definitions ;
+start ModB;
+   x = 1;
+finish ModB;
+
+start ModA;
+   run ModB;
+finish ModA;
+
+run ModA;
+print x;
+
+*Calling a Module from Another Module ;
+* Understanding Argument Passing ;
+proc iml;
+start square(a, b);
+	a = b##2;
+finish;
+
+x = {. .};
+y = {3 4};
+reset printall;
+do i = 1  to 2;
+	run square(x[i], y[i]);
+end;
+print x;
+
+* just run the module;
+run square(x, y);
+print x;
+
+*** Termination Statements *** ;
+msg = "Please enter an assignment for X, then enter RESUME;"; 
+pause msg; 
+
+QUIT;
